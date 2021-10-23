@@ -11,12 +11,12 @@ import (
 	v "github.com/core-go/service/v10"
 	"reflect"
 
-	"go-service/internal/usecase/user"
+	. "go-service/internal/usecase/user"
 )
 
 type ApplicationContext struct {
 	HealthHandler *health.Handler
-	UserHandler   user.UserHandler
+	UserHandler   UserHandler
 }
 
 func NewApp(ctx context.Context, root Root) (*ApplicationContext, error) {
@@ -26,15 +26,15 @@ func NewApp(ctx context.Context, root Root) (*ApplicationContext, error) {
 	}
 	logError := log.ErrorMsg
 	status := sv.InitializeStatus(root.Status)
+	validator := v.NewValidator()
 
-	userType := reflect.TypeOf(user.User{})
+	userType := reflect.TypeOf(User{})
 	userQueryBuilder := mq.NewBuilder(userType)
 	userSearchBuilder := mgo.NewSearchBuilder(db, "users", userQueryBuilder.BuildQuery, search.GetSort)
 	userRepository := mgo.NewRepository(db, "users", userType)
 
-	userService := user.NewUserService(userRepository)
-	validator := v.NewValidator()
-	userHandler := user.NewUserHandler(userSearchBuilder.Search, userService, status, validator.Validate, logError)
+	userService := NewUserService(userRepository)
+	userHandler := NewUserHandler(userSearchBuilder.Search, userService, status, validator.Validate, logError)
 
 	mongoChecker := mgo.NewHealthChecker(db)
 	healthHandler := health.NewHandler(mongoChecker)
