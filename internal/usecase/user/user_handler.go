@@ -22,15 +22,15 @@ func NewUserHandler(find func(context.Context, interface{}, interface{}, int64, 
 	modelType := reflect.TypeOf(User{})
 	keys, indexes, _ := sv.BuildHandlerParams(modelType)
 	searchHandler := search.NewJSONSearchHandler(find, modelType, searchModelType, logError, nil)
-	return &userHandler{SearchHandler: searchHandler, service: service, keys: keys, indexes: indexes, modelType: modelType, Status: status, Validate: validate, Error: logError}
+	return &userHandler{SearchHandler: searchHandler, service: service, Keys: keys, Indexes: indexes, ModelType: modelType, Status: status, Validate: validate, Error: logError}
 }
 
 type userHandler struct {
 	*search.SearchHandler
 	service   UserService
-	keys      []string
-	indexes   map[string]int
-	modelType reflect.Type
+	Keys      []string
+	Indexes   map[string]int
+	ModelType reflect.Type
 	Status    sv.StatusConfig
 	Validate  func(ctx context.Context, model interface{}) ([]sv.ErrorMessage, error)
 	Error     func(context.Context, string)
@@ -56,7 +56,7 @@ func (h *userHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 func (h *userHandler) Update(w http.ResponseWriter, r *http.Request) {
 	var user User
-	er1 := sv.DecodeAndCheckId(w, r, &user, h.keys, h.indexes)
+	er1 := sv.DecodeAndCheckId(w, r, &user, h.Keys, h.Indexes)
 	if er1 == nil {
 		errors, er2 := h.Validate(r.Context(), &user)
 		if !sv.HasError(w, r, errors, er2, *h.Status.ValidationError, h.Error, nil) {
@@ -67,7 +67,7 @@ func (h *userHandler) Update(w http.ResponseWriter, r *http.Request) {
 }
 func (h *userHandler) Patch(w http.ResponseWriter, r *http.Request) {
 	var user User
-	r, json, er1 := sv.BuildMapAndCheckId(w, r, &user, h.keys, h.indexes)
+	r, json, er1 := sv.BuildMapAndCheckId(w, r, &user, h.Keys, h.Indexes)
 	if er1 == nil {
 		errors, er2 := h.Validate(r.Context(), &user)
 		if !sv.HasError(w, r, errors, er2, *h.Status.ValidationError, h.Error, nil) {
