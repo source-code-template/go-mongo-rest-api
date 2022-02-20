@@ -255,7 +255,7 @@ func main() {
 
 	log.Initialize(conf.Log)
 	r.Use(mid.BuildContext)
-	logger := mid.NewStructuredLogger()
+	logger := mid.NewLogger()
 	r.Use(mid.Logger(conf.MiddleWare, log.InfoFields, logger))
 	r.Use(mid.Recover(log.ErrorMsg))
 }

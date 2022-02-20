@@ -13,5 +13,5 @@ type Root struct {
 	Log        log.Config        `mapstructure:"log"`
 	MiddleWare mid.LogConfig     `mapstructure:"middleware"`
 	Status     *sv.StatusConfig  `mapstructure:"status"`
-	Action     *sv.ActionConfig `mapstructure:"action"`
+	Action     *sv.ActionConfig  `mapstructure:"action"`
 }
