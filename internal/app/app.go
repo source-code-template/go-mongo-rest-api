@@ -15,25 +15,24 @@ import (
 )
 
 type ApplicationContext struct {
-	HealthHandler *health.Handler
-	UserHandler   UserHandler
+	Health *health.Handler
+	User   UserHandler
 }
 
-func NewApp(ctx context.Context, root Root) (*ApplicationContext, error) {
-	db, err := mgo.Setup(ctx, root.Mongo)
+func NewApp(ctx context.Context, conf Config) (*ApplicationContext, error) {
+	db, err := mgo.Setup(ctx, conf.Mongo)
 	if err != nil {
 		return nil, err
 	}
 	logError := log.ErrorMsg
-	status := sv.InitializeStatus(root.Status)
-	action := sv.InitializeAction(root.Action)
+	status := sv.InitializeStatus(conf.Status)
+	action := sv.InitializeAction(conf.Action)
 	validator := v.NewValidator()
 
 	userType := reflect.TypeOf(User{})
-	userQueryBuilder := mq.NewBuilder(userType)
-	userSearchBuilder := mgo.NewSearchBuilder(db, "users", userQueryBuilder.BuildQuery, search.GetSort)
+	userQuery := mq.UseQuery(userType)
+	userSearchBuilder := mgo.NewSearchBuilder(db, "users", userQuery, search.GetSort)
 	userRepository := mgo.NewRepository(db, "users", userType)
-
 	userService := NewUserService(userRepository)
 	userHandler := NewUserHandler(userSearchBuilder.Search, userService, status, logError, validator.Validate, &action)
 
@@ -41,7 +40,7 @@ func NewApp(ctx context.Context, root Root) (*ApplicationContext, error) {
 	healthHandler := health.NewHandler(mongoChecker)
 
 	return &ApplicationContext{
-		HealthHandler: healthHandler,
-		UserHandler:   userHandler,
+		Health: healthHandler,
+		User:   userHandler,
 	}, nil
 }
